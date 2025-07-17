@@ -1,17 +1,16 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Wifi, Shield, BarChart3, Users, ArrowRight, Globe } from "lucide-react"
-import TestingScreen from "./testing/page"
-import ResultsScreen from "./results/page"
 
 export default function HomePage() {
-  const [currentScreen, setCurrentScreen] = useState<"home" | "testing" | "results">("home")
+  const router = useRouter()
   const [formData, setFormData] = useState({
     isp: "",
     city: "",
@@ -19,20 +18,12 @@ export default function HomePage() {
 
   const handleStartTest = () => {
     if (formData.isp && formData.city) {
-      setCurrentScreen("testing")
-      // Simulate test duration
-      setTimeout(() => {
-        setCurrentScreen("results")
-      }, 8000)
+      const searchParams = new URLSearchParams({
+        isp: formData.isp,
+        city: formData.city,
+      })
+      router.push(`/testing?${searchParams.toString()}`)
     }
-  }
-
-  if (currentScreen === "testing") {
-    return <TestingScreen />
-  }
-
-  if (currentScreen === "results") {
-    return <ResultsScreen />
   }
 
   return (
