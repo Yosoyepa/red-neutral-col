@@ -15,8 +15,9 @@ model TestResult {
   city            String
   downloadSpeed   Float
   uploadSpeed     Float
-  latency         Int
-  jitter          Int
+  ping            Int
+  jitter          Float
   throttlingRatio Float?
+  testDate        DateTime @default(now())
   createdAt       DateTime @default(now())
 }

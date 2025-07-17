@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Download, Upload, Zap, Shield } from "lucide-react"
 
-export default function TestingScreen() {
+function TestingContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [currentPhase, setCurrentPhase] = useState<"ping" | "download" | "upload" | "complete">("ping")
@@ -248,5 +248,32 @@ export default function TestingScreen() {
         </div>
       </div>
     </div>
+  )
+}
+
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-slate-900">Red Neutral</span>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Cargando...</h1>
+          <p className="text-slate-600">Preparando la prueba de velocidad</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function TestingScreen() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <TestingContent />
+    </Suspense>
   )
 }

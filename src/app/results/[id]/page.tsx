@@ -1,5 +1,3 @@
-"use client"
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -17,17 +15,37 @@ import {
   TrendingUp,
   Home,
 } from "lucide-react"
+import { PrismaClient } from "@prisma/client"
+import { notFound } from "next/navigation"
+import Link from "next/link"
 
-export default function ResultsScreen() {
-  // Simulated test results
+const prisma = new PrismaClient()
+
+type Props = {
+  params: { id: string }
+}
+
+export default async function ResultsScreen({ params }: Props) {
+  // Buscar el resultado en la base de datos
+  const testResult = await prisma.testResult.findUnique({
+    where: { id: params.id }
+  })
+  
+  if (!testResult) {
+    notFound()
+  }
+  
+  // Usar los datos reales de la base de datos
   const results = {
-    download: 85.4,
-    upload: 42.1,
-    latency: 18,
-    isp: "Claro",
-    city: "Bogotá",
-    neutralityStatus: "good", // 'good', 'warning', 'poor'
-    neutralityScore: 92,
+    download: testResult.downloadSpeed,
+    upload: testResult.uploadSpeed,
+    latency: testResult.ping,
+    isp: testResult.isp,
+    city: testResult.city,
+    jitter: testResult.jitter,
+    testDate: testResult.testDate,
+    neutralityStatus: "good", // Simplificado por ahora
+    neutralityScore: 92, // Simplificado por ahora
   }
 
   const cityAverage = {
@@ -91,10 +109,12 @@ export default function ResultsScreen() {
               </div>
               <span className="text-xl font-bold text-slate-900">Red Neutral</span>
             </div>
-            <Button variant="outline" className="gap-2 bg-transparent">
-              <Home className="w-4 h-4" />
-              Nueva Prueba
-            </Button>
+            <Link href="/">
+              <Button variant="outline" className="gap-2 bg-transparent">
+                <Home className="w-4 h-4" />
+                Nueva Prueba
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -105,7 +125,7 @@ export default function ResultsScreen() {
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Resultados de tu Prueba</h1>
             <p className="text-slate-600">
-              {results.isp} • {results.city} • {new Date().toLocaleDateString("es-CO")}
+              {results.isp} • {results.city} • {results.testDate.toLocaleDateString("es-CO")}
             </p>
           </div>
 
