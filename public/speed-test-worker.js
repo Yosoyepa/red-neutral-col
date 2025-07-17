@@ -201,20 +201,29 @@ async function measureUploadSpeed() {
         });
       }
     } catch (error) {
-      // Si no hay endpoint de upload, simular velocidad
-      const simulatedSpeed = Math.random() * 20 + 5; // Entre 5-25 Mbps
-      totalBytes += testData.size;
-      testCount++;
-      
+      // Si no hay endpoint de upload, informar al usuario
       postMessage({
-        type: 'progress',
+        type: 'error',
         phase: 'upload',
-        progress: 60 + (testCount * 10),
-        message: 'Midiendo velocidad de subida...',
-        currentUpload: simulatedSpeed
+        message: 'Error al medir la velocidad de subida. No se pudo conectar al servidor.',
+        action: 'retry' // Sugerir al usuario que intente nuevamente
       });
       
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simular tiempo
+      // Esperar respuesta del usuario para reintentar o finalizar
+      const userResponse = await new Promise(resolve => {
+        self.addEventListener('message', function handleRetry(event) {
+          if (event.data.type === 'retry-upload') {
+            self.removeEventListener('message', handleRetry);
+            resolve(event.data.retry);
+          }
+        });
+      });
+      
+      if (userResponse) {
+        continue; // Reintentar la prueba de subida
+      } else {
+        break; // Finalizar la prueba de subida
+      }
     }
   }
   
