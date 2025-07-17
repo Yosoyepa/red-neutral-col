@@ -15,8 +15,9 @@ async function getTestResult(id: string) {
 }
 
 // Este es el componente de la página principal
-export default async function Page({ params }: { params: { id: string } }) {
-  const resultData = await getTestResult(params.id);
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const resultData = await getTestResult(id);
 
   // Pasamos los datos del servidor a un componente de cliente para la interactividad
   return <ResultsScreen initialResults={resultData} />;
