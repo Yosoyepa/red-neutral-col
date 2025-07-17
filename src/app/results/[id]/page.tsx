@@ -15,18 +15,9 @@ import {
   TrendingUp,
   Home,
 } from "lucide-react"
-import { PrismaClient } from "@prisma/client"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-
-// Singleton para PrismaClient
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
-const prisma = globalForPrisma.prisma ?? new PrismaClient()
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+import prisma from "@/lib/prisma"
 
 type Props = {
   params: Promise<{ id: string }>

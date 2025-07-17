@@ -3,6 +3,7 @@ self.addEventListener('message', function(event) {
   if (event.data.type === 'start') {
     startSpeedTest();
   }
+  // Los mensajes de retry-upload se manejan directamente en measureUploadSpeed
 });
 
 async function startSpeedTest() {
@@ -23,14 +24,17 @@ async function startSpeedTest() {
       message: 'Midiendo latencia...'
     });
 
-    results.ping = await measurePing();
+    const { avgPing, jitter } = await measurePing();
+    results.ping = avgPing;
+    results.jitter = jitter;
     
     postMessage({
       type: 'progress',
       phase: 'ping',
       progress: 25,
       message: 'Latencia medida',
-      currentPing: results.ping
+      currentPing: results.ping,
+      jitter: results.jitter
     });
 
     // Fase 2: Medición de velocidad de descarga
@@ -68,9 +72,6 @@ async function startSpeedTest() {
       message: 'Velocidad de subida medida',
       currentUpload: results.uploadSpeed
     });
-
-    // Calcular jitter aproximado
-    results.jitter = Math.random() * 5 + 1; // Simulación simple
 
     // Finalizar
     postMessage({
@@ -114,7 +115,11 @@ async function measurePing() {
   
   // Calcular ping promedio
   const avgPing = pings.reduce((a, b) => a + b, 0) / pings.length;
-  return Math.round(avgPing);
+  
+  // Calcular jitters
+  const jitter = pings.length > 1 ? Math.max(...pings) - Math.min(...pings) : 0;
+
+  return { avgPing: Math.round(avgPing), jitter: Math.round(jitter) };
 }
 
 async function measureDownloadSpeed() {
@@ -228,7 +233,7 @@ async function measureUploadSpeed() {
   }
   
   const totalTime = (Date.now() - startTime) / 1000;
-  const speedMbps = totalBytes > 0 ? (totalBytes / totalTime) / (1024 * 1024) : Math.random() * 15 + 5;
+  const speedMbps = totalBytes > 0 ? (totalBytes / totalTime) / (1024 * 1024) : 0;
   
   return Math.round(speedMbps * 100) / 100; // Redondear a 2 decimales
 }

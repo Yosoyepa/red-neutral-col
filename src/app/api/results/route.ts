@@ -1,14 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-// Singleton para PrismaClient
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
-const prisma = globalForPrisma.prisma ?? new PrismaClient()
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+import prisma from '@/lib/prisma'
+import { TestFormData } from '@/lib/types'
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,15 +13,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
     }
     
+    // Validar rangos razonables
+    const downloadSpeedNum = parseFloat(downloadSpeed)
+    const uploadSpeedNum = parseFloat(uploadSpeed)
+    const pingNum = parseInt(ping)
+    const jitterNum = parseFloat(jitter || 0)
+    
+    if (downloadSpeedNum < 0 || downloadSpeedNum > 10000) {
+      return NextResponse.json({ error: 'Velocidad de descarga debe estar entre 0 y 10000 Mbps' }, { status: 400 })
+    }
+    
+    if (uploadSpeedNum < 0 || uploadSpeedNum > 10000) {
+      return NextResponse.json({ error: 'Velocidad de subida debe estar entre 0 y 10000 Mbps' }, { status: 400 })
+    }
+    
+    if (pingNum < 0 || pingNum > 10000) {
+      return NextResponse.json({ error: 'Ping debe estar entre 0 y 10000 ms' }, { status: 400 })
+    }
+    
+    if (jitterNum < 0 || jitterNum > 1000) {
+      return NextResponse.json({ error: 'Jitter debe estar entre 0 y 1000 ms' }, { status: 400 })
+    }
+    
     // Crear registro en la base de datos
     const result = await prisma.testResult.create({
       data: {
         isp,
         city,
-        downloadSpeed: parseFloat(downloadSpeed),
-        uploadSpeed: parseFloat(uploadSpeed),
-        ping: parseInt(ping),
-        jitter: parseFloat(jitter || 0),
+        downloadSpeed: downloadSpeedNum,
+        uploadSpeed: uploadSpeedNum,
+        ping: pingNum,
+        jitter: jitterNum,
         testDate: testDate ? new Date(testDate) : new Date(),
       }
     })

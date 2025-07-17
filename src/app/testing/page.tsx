@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Download, Upload, Zap, Shield } from "lucide-react"
+import { TestResults, TestFormData, WorkerMessage } from "@/lib/types"
 
 function TestingContent() {
   const searchParams = useSearchParams()
@@ -22,7 +23,7 @@ function TestingContent() {
   const city = searchParams.get('city') || 'unknown'
 
   // Función para manejar la finalización de la prueba
-  const handleTestComplete = async (results: any) => {
+  const handleTestComplete = async (results: TestResults) => {
     try {
       const testData = {
         isp,
@@ -61,13 +62,19 @@ function TestingContent() {
     setWorker(speedWorker)
 
     // Configurar listener para mensajes del worker
-    speedWorker.onmessage = (event) => {
+    speedWorker.onmessage = (event: MessageEvent<WorkerMessage>) => {
       const { type, phase, progress: workerProgress, message, currentDownload, currentUpload, currentPing, results } = event.data
       
       if (type === 'progress') {
-        setProgress(workerProgress)
-        setCurrentMessage(message)
-        setCurrentPhase(phase)
+        if (workerProgress !== undefined) {
+          setProgress(workerProgress)
+        }
+        if (message !== undefined) {
+          setCurrentMessage(message)
+        }
+        if (phase !== undefined) {
+          setCurrentPhase(phase)
+        }
         
         if (currentDownload !== undefined) {
           setDownloadSpeed(currentDownload)
@@ -84,10 +91,13 @@ function TestingContent() {
         setCurrentPhase('complete')
         
         // Proceder a la siguiente tarea (enviar resultados al API)
-        handleTestComplete(results)
+        if (results) {
+          handleTestComplete(results)
+        }
       } else if (type === 'error') {
-        setCurrentMessage('Error en la prueba: ' + message)
-        console.error('Error del worker:', message)
+        const errorMessage = message || 'Error desconocido'
+        setCurrentMessage('Error en la prueba: ' + errorMessage)
+        console.error('Error del worker:', errorMessage)
       }
     }
 
