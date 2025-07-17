@@ -19,16 +19,26 @@ import { PrismaClient } from "@prisma/client"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 
-const prisma = new PrismaClient()
+// Singleton para PrismaClient
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
+
+const prisma = globalForPrisma.prisma ?? new PrismaClient()
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function ResultsScreen({ params }: Props) {
+  // Await params ya que puede ser una Promise en Next.js 15
+  const { id } = await params
+  
   // Buscar el resultado en la base de datos
   const testResult = await prisma.testResult.findUnique({
-    where: { id: params.id }
+    where: { id }
   })
   
   if (!testResult) {
@@ -109,10 +119,12 @@ export default async function ResultsScreen({ params }: Props) {
               </div>
               <span className="text-xl font-bold text-slate-900">Red Neutral</span>
             </div>
-            <Button variant="outline" className="gap-2 bg-transparent">
-              <Home className="w-4 h-4" />
-              Nueva Prueba
-            </Button>
+            <Link href="/">
+              <Button variant="outline" className="gap-2 bg-transparent">
+                <Home className="w-4 h-4" />
+                Nueva Prueba
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
