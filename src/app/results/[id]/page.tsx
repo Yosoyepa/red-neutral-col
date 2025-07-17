@@ -109,12 +109,10 @@ export default async function ResultsScreen({ params }: Props) {
               </div>
               <span className="text-xl font-bold text-slate-900">Red Neutral</span>
             </div>
-            <Link href="/">
-              <Button variant="outline" className="gap-2 bg-transparent">
-                <Home className="w-4 h-4" />
-                Nueva Prueba
-              </Button>
-            </Link>
+            <Button variant="outline" className="gap-2 bg-transparent">
+              <Home className="w-4 h-4" />
+              Nueva Prueba
+            </Button>
           </div>
         </div>
       </header>
