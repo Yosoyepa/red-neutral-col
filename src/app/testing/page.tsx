@@ -1,46 +1,114 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Download, Upload, Zap, Shield } from "lucide-react"
 
 export default function TestingScreen() {
-  const [currentTest, setCurrentTest] = useState<"download" | "upload" | "latency" | "neutrality">("download")
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const [currentPhase, setCurrentPhase] = useState<"ping" | "download" | "upload" | "complete">("ping")
   const [progress, setProgress] = useState(0)
+  const [currentMessage, setCurrentMessage] = useState("Iniciando prueba...")
   const [downloadSpeed, setDownloadSpeed] = useState(0)
   const [uploadSpeed, setUploadSpeed] = useState(0)
-  const [latency, setLatency] = useState(0)
+  const [ping, setPing] = useState(0)
+  const [worker, setWorker] = useState<Worker | null>(null)
+  
+  // Leer parámetros de la URL
+  const isp = searchParams.get('isp') || 'unknown'
+  const city = searchParams.get('city') || 'unknown'
+
+  // Función para manejar la finalización de la prueba
+  const handleTestComplete = async (results: any) => {
+    try {
+      const testData = {
+        isp,
+        city,
+        downloadSpeed: results.downloadSpeed,
+        uploadSpeed: results.uploadSpeed,
+        ping: results.ping,
+        jitter: results.jitter,
+        testDate: results.testDate
+      }
+      
+      const response = await fetch('/api/results', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(testData)
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        router.push(`/results/${result.id}`)
+      } else {
+        console.error('Error al enviar resultados:', response.statusText)
+        setCurrentMessage('Error al guardar resultados')
+      }
+    } catch (error) {
+      console.error('Error al enviar resultados:', error)
+      setCurrentMessage('Error al guardar resultados')
+    }
+  }
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          // Move to next test
-          if (currentTest === "download") {
-            setCurrentTest("upload")
-            setDownloadSpeed(Math.floor(Math.random() * 80) + 20)
-            return 0
-          } else if (currentTest === "upload") {
-            setCurrentTest("latency")
-            setUploadSpeed(Math.floor(Math.random() * 40) + 10)
-            return 0
-          } else if (currentTest === "latency") {
-            setCurrentTest("neutrality")
-            setLatency(Math.floor(Math.random() * 50) + 10)
-            return 0
-          }
-          return 100
-        }
-        return prev + 2
-      })
-    }, 100)
+    // Inicializar Web Worker
+    const speedWorker = new Worker('/speed-test-worker.js')
+    setWorker(speedWorker)
 
-    return () => clearInterval(interval)
-  }, [currentTest])
+    // Configurar listener para mensajes del worker
+    speedWorker.onmessage = (event) => {
+      const { type, phase, progress: workerProgress, message, currentDownload, currentUpload, currentPing, results } = event.data
+      
+      if (type === 'progress') {
+        setProgress(workerProgress)
+        setCurrentMessage(message)
+        setCurrentPhase(phase)
+        
+        if (currentDownload !== undefined) {
+          setDownloadSpeed(currentDownload)
+        }
+        if (currentUpload !== undefined) {
+          setUploadSpeed(currentUpload)
+        }
+        if (currentPing !== undefined) {
+          setPing(currentPing)
+        }
+      } else if (type === 'complete') {
+        setProgress(100)
+        setCurrentMessage('Prueba completada')
+        setCurrentPhase('complete')
+        
+        // Proceder a la siguiente tarea (enviar resultados al API)
+        handleTestComplete(results)
+      } else if (type === 'error') {
+        setCurrentMessage('Error en la prueba: ' + message)
+        console.error('Error del worker:', message)
+      }
+    }
+
+    // Iniciar la prueba
+    speedWorker.postMessage({ type: 'start' })
+
+    return () => {
+      speedWorker.terminate()
+    }
+  }, [])
 
   const getTestInfo = () => {
-    switch (currentTest) {
+    switch (currentPhase) {
+      case "ping":
+        return {
+          title: "Midiendo Latencia...",
+          description: "Probando el tiempo de respuesta de la conexión",
+          icon: Zap,
+          color: "text-yellow-600",
+          bgColor: "bg-yellow-100",
+        }
       case "download":
         return {
           title: "Midiendo Descarga...",
@@ -57,21 +125,21 @@ export default function TestingScreen() {
           color: "text-green-600",
           bgColor: "bg-green-100",
         }
-      case "latency":
+      case "complete":
         return {
-          title: "Probando Latencia...",
-          description: "Midiendo el tiempo de respuesta de la conexión",
-          icon: Zap,
-          color: "text-yellow-600",
-          bgColor: "bg-yellow-100",
-        }
-      case "neutrality":
-        return {
-          title: "Analizando Neutralidad...",
-          description: "Comparando velocidades entre diferentes servicios",
+          title: "Prueba Completada",
+          description: "Guardando resultados y redirigiendo...",
           icon: Shield,
           color: "text-purple-600",
           bgColor: "bg-purple-100",
+        }
+      default:
+        return {
+          title: "Iniciando...",
+          description: "Preparando la prueba de velocidad",
+          icon: Shield,
+          color: "text-blue-600",
+          bgColor: "bg-blue-100",
         }
     }
   }
@@ -121,7 +189,7 @@ export default function TestingScreen() {
             <div className="grid grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600 mb-1">
-                  {currentTest === "download" ? Math.floor(downloadSpeed * (progress / 100)) : downloadSpeed}
+                  {downloadSpeed.toFixed(1)}
                 </div>
                 <div className="text-sm text-slate-600">Mbps</div>
                 <div className="text-xs text-slate-500 mt-1">Descarga</div>
@@ -129,7 +197,7 @@ export default function TestingScreen() {
 
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600 mb-1">
-                  {currentTest === "upload" ? Math.floor(uploadSpeed * (progress / 100)) : uploadSpeed}
+                  {uploadSpeed.toFixed(1)}
                 </div>
                 <div className="text-sm text-slate-600">Mbps</div>
                 <div className="text-xs text-slate-500 mt-1">Subida</div>
@@ -137,7 +205,7 @@ export default function TestingScreen() {
 
               <div className="text-center">
                 <div className="text-3xl font-bold text-yellow-600 mb-1">
-                  {currentTest === "latency" ? Math.floor(latency * (progress / 100)) : latency}
+                  {ping}
                 </div>
                 <div className="text-sm text-slate-600">ms</div>
                 <div className="text-xs text-slate-500 mt-1">Latencia</div>
@@ -147,16 +215,17 @@ export default function TestingScreen() {
         </Card>
 
         {/* Test Steps */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           {[
+            { key: "ping", label: "Latencia", icon: Zap },
             { key: "download", label: "Descarga", icon: Download },
             { key: "upload", label: "Subida", icon: Upload },
-            { key: "latency", label: "Latencia", icon: Zap },
-            { key: "neutrality", label: "Neutralidad", icon: Shield },
           ].map((step, index) => {
             const StepIcon = step.icon
-            const isActive = currentTest === step.key
-            const isCompleted = ["download", "upload", "latency", "neutrality"].indexOf(currentTest) > index
+            const isActive = currentPhase === step.key
+            const phases = ["ping", "download", "upload", "complete"]
+            const currentIndex = phases.indexOf(currentPhase)
+            const isCompleted = currentIndex > index
 
             return (
               <Card
