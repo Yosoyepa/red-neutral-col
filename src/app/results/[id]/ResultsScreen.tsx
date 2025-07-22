@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import ServiceSpeedChart from "@/components/ui/ServiceSpeedChart"
 import ComparisonRadarChart from "@/components/ui/ComparisonRadarChart"
+import { ShareButtons } from "@/components/ui/ShareButtons"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import {
   Dialog,
@@ -570,15 +571,27 @@ neutralityScore
           
           {/* Share Success Message */}
           {showShareSuccess && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-center">
-              <p className="text-green-800 font-medium">
-                ¡Enlace copiado al portapapeles!
-              </p>
-              {shareUrl && (
-                <p className="text-sm text-green-600 mt-1">
-                  {shareUrl}
+            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="text-center">
+                <p className="text-green-800 font-medium">
+                  ¡Enlace copiado al portapapeles!
                 </p>
-              )}
+                {shareUrl && (
+                  <>
+                    <p className="text-sm text-green-600 mt-1">
+                      {shareUrl}
+                    </p>
+                    <div className="mt-4 pt-4 border-t border-green-200">
+                      <p className="text-sm text-gray-600 mb-3">Compartir en redes sociales:</p>
+                      <ShareButtons 
+                        url={shareUrl}
+                        title={`Mi prueba de neutralidad de red: ${results.download} Mbps con ${results.isp} en ${results.city}`}
+                        description={throttlingDetected ? 'Posible throttling detectado' : 'Prueba realizada con Red Neutral COL'}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>

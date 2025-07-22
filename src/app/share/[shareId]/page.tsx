@@ -4,9 +4,10 @@ import { notFound } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Download, Upload, Clock, Activity, Share2, AlertCircle } from 'lucide-react';
+import { Download, Upload, Clock, Activity, Share2, AlertCircle, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { ShareButtons } from '@/components/ui/ShareButtons';
 
 async function getSharedResult(shareId: string) {
   try {
@@ -76,9 +77,15 @@ export default function SharedResultPage({
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Shield className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-slate-900 dark:text-white">Red Neutral COL</span>
+          </div>
           <h1 className="text-3xl font-bold mb-2">Resultado de Prueba de Neutralidad</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Red Neutral COL - Monitoreo de Neutralidad de Red en Colombia
+            Monitoreo de Neutralidad de Red en Colombia
           </p>
           <Badge variant="secondary" className="mt-2">
             ID: {params.shareId}
@@ -215,6 +222,16 @@ export default function SharedResultPage({
                   <Share2 className="mr-2 h-4 w-4" />
                   {showCopySuccess ? '¡Copiado!' : 'Copiar Enlace'}
                 </Button>
+              </div>
+              
+              {/* Botones de compartir en redes sociales */}
+              <div className="mt-4 pt-4 border-t">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Compartir en redes sociales:</p>
+                <ShareButtons 
+                  url={typeof window !== 'undefined' ? window.location.href : ''}
+                  title={`Mi prueba de neutralidad de red: ${result.downloadSpeed.toFixed(1)} Mbps con ${result.isp} en ${result.city}`}
+                  description={hasThrottling ? `Posible throttling detectado: ${throttlingPercentage}% de reducción en velocidad` : 'Prueba realizada con Red Neutral COL'}
+                />
               </div>
             </div>
           </CardContent>
