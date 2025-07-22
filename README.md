@@ -23,6 +23,7 @@
 - [Instalación](#-instalación)
 - [Uso](#-uso)
 - [API](#-api)
+- [Documentación](#-documentación)
 - [Contribuir](#-contribuir)
 - [Licencia](#-licencia)
 - [Contacto](#-contacto)
@@ -68,6 +69,8 @@ En Colombia, los usuarios no tienen herramientas accesibles para verificar si su
   - Historial de pruebas por usuario
 
 ## 🏗️ Arquitectura
+
+> 📘 Para más detalles sobre la arquitectura del sistema, consulta la [documentación de arquitectura](docs/ARCHITECTURE.md)
 
 ### Diagrama de Flujo General
 
@@ -206,6 +209,9 @@ NEXT_PUBLIC_BASE_URL="http://localhost:3000"
 ```
 
 4. **Configurar la base de datos**
+
+> 📘 Para una guía detallada de configuración de base de datos, consulta la [documentación de base de datos](docs/DATABASE_SETUP.md)
+
 ```bash
 npx prisma migrate dev
 npx prisma generate
@@ -243,6 +249,8 @@ La aplicación estará disponible en `http://localhost:3000`
 
 ## 🔌 API
 
+> 📘 Para la documentación completa de la API, consulta la [documentación de API](docs/API.md)
+
 ### Endpoints Principales
 
 #### `POST /api/results`
@@ -278,6 +286,30 @@ worker.postMessage({ type: 'start', isp: 'Claro', city: 'Bogotá' })
 { type: 'progress', message: 'Midiendo descarga...' }
 { type: 'speed-update', download: 45.2 }
 { type: 'complete', results: {...} }
+```
+
+## 📚 Documentación
+
+Para información más detallada sobre diferentes aspectos del proyecto:
+
+- 📐 **[Arquitectura del Sistema](docs/ARCHITECTURE.md)** - Diseño técnico, patrones y decisiones arquitectónicas
+- 🔌 **[Documentación de API](docs/API.md)** - Endpoints, parámetros y ejemplos de uso
+- 🗄️ **[Configuración de Base de Datos](docs/DATABASE_SETUP.md)** - Guía completa para configurar PostgreSQL y Prisma
+- 🚀 **[Guía de Despliegue](docs/DEPLOYMENT.md)** - Instrucciones para desplegar en producción
+- 🧪 **[Guía de Pruebas](docs/TESTING.md)** - Estrategias de testing y cómo ejecutar pruebas
+
+### Estructura del Proyecto
+
+```
+red-neutral-col/
+├── app/              # Código fuente de Next.js
+│   ├── api/         # API Routes
+│   ├── components/  # Componentes React
+│   └── lib/         # Utilidades y lógica
+├── prisma/          # Schema y migraciones
+├── public/          # Archivos estáticos
+├── docs/            # Documentación detallada
+└── tests/           # Pruebas automatizadas
 ```
 
 ## 🤝 Contribuir
