@@ -38,15 +38,19 @@ type Averages = {
   latency: number;
 };
 
-// El componente ahora recibe los resultados como una prop 'initialResults' y los promedios
+// El componente ahora recibe los resultados como una prop 'initialResults' y los promedios, puntaje y estado de neutralidad
 export function ResultsScreen({ 
   initialResults, 
   cityAverages, 
-  ispAverages 
+  ispAverages, 
+  neutralityScore, 
+  neutralityStatus
 }: { 
   initialResults: TestResult; 
   cityAverages: Averages;
   ispAverages: Averages;
+  neutralityScore: number;
+  neutralityStatus: string;
 }) {
   // Usar los datos reales de la base de datos
   const results = {
@@ -57,8 +61,8 @@ export function ResultsScreen({
     city: initialResults.city,
     jitter: initialResults.jitter,
     testDate: initialResults.testDate,
-    neutralityStatus: "good", // Simplificado por ahora
-    neutralityScore: 92, // Simplificado por ahora
+neutralityStatus,
+neutralityScore
   }
 
   // Usar los promedios reales calculados desde la base de datos
@@ -66,6 +70,19 @@ export function ResultsScreen({
   const ispAverage = ispAverages;
 
   const getNeutralityStatus = () => {
+    // Manejar el caso cuando no hay datos suficientes
+    if (results.neutralityStatus === 'insufficient-data') {
+      return {
+        status: "Datos insuficientes para el análisis",
+        description: "No hay suficientes datos de comparación para tu ISP o ciudad. Sé el primero en contribuir.",
+        color: "text-gray-700",
+        bgColor: "bg-gray-50",
+        borderColor: "border-gray-200",
+        icon: AlertTriangle,
+        iconColor: "text-gray-600",
+      }
+    }
+    
     if (results.neutralityScore >= 85) {
       return {
         status: "No detectamos anomalías significativas",
