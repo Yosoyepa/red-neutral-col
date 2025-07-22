@@ -24,6 +24,11 @@ model TestResult {
   socialMediaSpeed   Float? // Velocidad simulando redes sociales
   generalWebSpeed    Float? // Velocidad para navegación general
   
+  // Campos para compartir resultados
+  shareId         String?  @unique
+  isPublic        Boolean  @default(false)
+  sharedAt        DateTime?
+  
   testDate        DateTime @default(now())
   createdAt       DateTime @default(now())
 }
