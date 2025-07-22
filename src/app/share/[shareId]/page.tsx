@@ -11,11 +11,14 @@ import { ShareButtons } from '@/components/ui/ShareButtons';
 
 async function getSharedResult(shareId: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/share-result?shareId=${shareId}`, {
+    // En cliente, usar window.location.origin o una ruta relativa
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const response = await fetch(`${baseUrl}/api/share-result?shareId=${shareId}`, {
       cache: 'no-store'
     });
     
     if (!response.ok) {
+      console.error('Response not ok:', response.status, response.statusText);
       return null;
     }
     
@@ -37,12 +40,21 @@ export default function SharedResultPage({
   
   useEffect(() => {
     async function fetchResult() {
-      const data = await getSharedResult(params.shareId);
-      if (!data) {
-        notFound();
+      console.log('Fetching shared result for ID:', params.shareId);
+      try {
+        const data = await getSharedResult(params.shareId);
+        console.log('Received data:', data);
+        if (!data) {
+          console.error('No data received');
+          setLoading(false);
+          return;
+        }
+        setResult(data);
+      } catch (error) {
+        console.error('Error in fetchResult:', error);
+      } finally {
+        setLoading(false);
       }
-      setResult(data);
-      setLoading(false);
     }
     fetchResult();
   }, [params.shareId]);
@@ -56,7 +68,29 @@ export default function SharedResultPage({
   }
   
   if (!result) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center p-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Shield className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-slate-900 dark:text-white">Red Neutral COL</span>
+          </div>
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Resultado no encontrado</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            El resultado que buscas no existe o ha sido eliminado.
+          </p>
+          <Link href="/">
+            <Button size="lg">
+              <Activity className="mr-2 h-4 w-4" />
+              Realizar nueva prueba
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const testDate = new Date(result.testDate);

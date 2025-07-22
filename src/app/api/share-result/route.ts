@@ -89,7 +89,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const result = await prisma.testResult.findUnique({
+    const result = await prisma.testResult.findFirst({
       where: { 
         shareId,
         isPublic: true 
