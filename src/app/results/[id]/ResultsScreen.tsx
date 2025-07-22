@@ -38,19 +38,28 @@ type Averages = {
   latency: number;
 };
 
+// Definimos un tipo para los datos de comparación de servicios
+type ServiceComparison = {
+  videoStreamingSpeed: number;
+  socialMediaSpeed: number;
+  generalWebSpeed: number;
+};
+
 // El componente ahora recibe los resultados como una prop 'initialResults' y los promedios, puntaje y estado de neutralidad
 export function ResultsScreen({ 
   initialResults, 
   cityAverages, 
   ispAverages, 
   neutralityScore, 
-  neutralityStatus
+  neutralityStatus,
+  serviceComparison
 }: { 
   initialResults: TestResult; 
   cityAverages: Averages;
   ispAverages: Averages;
   neutralityScore: number;
   neutralityStatus: string;
+  serviceComparison: ServiceComparison;
 }) {
   // Usar los datos reales de la base de datos
   const results = {
@@ -260,27 +269,53 @@ neutralityScore
                   <h4 className="font-semibold text-slate-900 mb-3">Comparación de Servicios</h4>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">YouTube</span>
+                      <span className="text-sm text-slate-600">Video Streaming</span>
                       <div className="flex items-center gap-2">
-                        <Progress value={88} className="w-20 h-2" />
-                        <span className="text-sm font-medium">88%</span>
+                        <Progress 
+                          value={results.download > 0 ? (serviceComparison.videoStreamingSpeed / results.download) * 100 : 0} 
+                          className="w-20 h-2" 
+                        />
+                        <span className="text-sm font-medium">
+                          {results.download > 0 
+                            ? Math.round((serviceComparison.videoStreamingSpeed / results.download) * 100) 
+                            : 0}%
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Netflix</span>
+                      <span className="text-sm text-slate-600">Redes Sociales</span>
                       <div className="flex items-center gap-2">
-                        <Progress value={92} className="w-20 h-2" />
-                        <span className="text-sm font-medium">92%</span>
+                        <Progress 
+                          value={results.download > 0 ? (serviceComparison.socialMediaSpeed / results.download) * 100 : 0} 
+                          className="w-20 h-2" 
+                        />
+                        <span className="text-sm font-medium">
+                          {results.download > 0 
+                            ? Math.round((serviceComparison.socialMediaSpeed / results.download) * 100) 
+                            : 0}%
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Servidor Neutral</span>
+                      <span className="text-sm text-slate-600">Navegación Web</span>
                       <div className="flex items-center gap-2">
-                        <Progress value={95} className="w-20 h-2" />
-                        <span className="text-sm font-medium">95%</span>
+                        <Progress 
+                          value={results.download > 0 ? (serviceComparison.generalWebSpeed / results.download) * 100 : 0} 
+                          className="w-20 h-2" 
+                        />
+                        <span className="text-sm font-medium">
+                          {results.download > 0 
+                            ? Math.round((serviceComparison.generalWebSpeed / results.download) * 100) 
+                            : 0}%
+                        </span>
                       </div>
                     </div>
                   </div>
+                  {serviceComparison.videoStreamingSpeed > 0 && (
+                    <p className="text-xs text-slate-500 mt-3">
+                      * Porcentaje relativo a tu velocidad de descarga general
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>
