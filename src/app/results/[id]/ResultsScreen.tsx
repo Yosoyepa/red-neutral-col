@@ -31,8 +31,23 @@ type TestResult = {
   testDate: Date;
 };
 
-// El componente ahora recibe los resultados como una prop 'initialResults'
-export function ResultsScreen({ initialResults }: { initialResults: TestResult }) {
+// Definimos un tipo para los promedios
+type Averages = {
+  download: number;
+  upload: number;
+  latency: number;
+};
+
+// El componente ahora recibe los resultados como una prop 'initialResults' y los promedios
+export function ResultsScreen({ 
+  initialResults, 
+  cityAverages, 
+  ispAverages 
+}: { 
+  initialResults: TestResult; 
+  cityAverages: Averages;
+  ispAverages: Averages;
+}) {
   // Usar los datos reales de la base de datos
   const results = {
     download: initialResults.downloadSpeed,
@@ -46,17 +61,9 @@ export function ResultsScreen({ initialResults }: { initialResults: TestResult }
     neutralityScore: 92, // Simplificado por ahora
   }
 
-  const cityAverage = {
-    download: 78.2,
-    upload: 38.5,
-    latency: 22,
-  }
-
-  const ispAverage = {
-    download: 82.1,
-    upload: 40.3,
-    latency: 19,
-  }
+  // Usar los promedios reales calculados desde la base de datos
+  const cityAverage = cityAverages;
+  const ispAverage = ispAverages;
 
   const getNeutralityStatus = () => {
     if (results.neutralityScore >= 85) {
@@ -144,11 +151,17 @@ export function ResultsScreen({ initialResults }: { initialResults: TestResult }
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">vs. Promedio ciudad</span>
                     <span className={results.download > cityAverage.download ? "text-green-600" : "text-red-600"}>
-                      {results.download > cityAverage.download ? "+" : ""}
-                      {(((results.download - cityAverage.download) / cityAverage.download) * 100).toFixed(1)}%
+                      {cityAverage.download > 0 ? (
+                        <>
+                          {results.download > cityAverage.download ? "+" : ""}
+                          {(((results.download - cityAverage.download) / cityAverage.download) * 100).toFixed(1)}%
+                        </>
+                      ) : (
+                        "N/A"
+                      )}
                     </span>
                   </div>
-                  <Progress value={(results.download / cityAverage.download) * 50} className="h-2" />
+                  <Progress value={cityAverage.download > 0 ? (results.download / cityAverage.download) * 50 : 0} className="h-2" />
                 </div>
               </CardContent>
             </Card>
@@ -168,11 +181,17 @@ export function ResultsScreen({ initialResults }: { initialResults: TestResult }
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">vs. Promedio ISP</span>
                     <span className={results.upload > ispAverage.upload ? "text-green-600" : "text-red-600"}>
-                      {results.upload > ispAverage.upload ? "+" : ""}
-                      {(((results.upload - ispAverage.upload) / ispAverage.upload) * 100).toFixed(1)}%
+                      {ispAverage.upload > 0 ? (
+                        <>
+                          {results.upload > ispAverage.upload ? "+" : ""}
+                          {(((results.upload - ispAverage.upload) / ispAverage.upload) * 100).toFixed(1)}%
+                        </>
+                      ) : (
+                        "N/A"
+                      )}
                     </span>
                   </div>
-                  <Progress value={(results.upload / ispAverage.upload) * 50} className="h-2" />
+                  <Progress value={ispAverage.upload > 0 ? (results.upload / ispAverage.upload) * 50 : 0} className="h-2" />
                 </div>
               </CardContent>
             </Card>
@@ -265,28 +284,28 @@ export function ResultsScreen({ initialResults }: { initialResults: TestResult }
                     <div className="flex justify-between text-sm mb-1">
                       <span>Descarga</span>
                       <span>
-                        {results.download} / {cityAverage.download} Mbps
+                        {results.download} / {cityAverage.download.toFixed(1)} Mbps
                       </span>
                     </div>
-                    <Progress value={(results.download / (cityAverage.download * 1.5)) * 100} className="h-2" />
+                    <Progress value={cityAverage.download > 0 ? (results.download / (cityAverage.download * 1.5)) * 100 : 0} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>Subida</span>
                       <span>
-                        {results.upload} / {cityAverage.upload} Mbps
+                        {results.upload} / {cityAverage.upload.toFixed(1)} Mbps
                       </span>
                     </div>
-                    <Progress value={(results.upload / (cityAverage.upload * 1.5)) * 100} className="h-2" />
+                    <Progress value={cityAverage.upload > 0 ? (results.upload / (cityAverage.upload * 1.5)) * 100 : 0} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>Latencia</span>
                       <span>
-                        {results.latency} / {cityAverage.latency} ms
+                        {results.latency} / {cityAverage.latency.toFixed(0)} ms
                       </span>
                     </div>
-                    <Progress value={100 - (results.latency / cityAverage.latency) * 50} className="h-2" />
+                    <Progress value={cityAverage.latency > 0 ? 100 - (results.latency / cityAverage.latency) * 50 : 0} className="h-2" />
                   </div>
                 </div>
               </CardContent>
@@ -305,28 +324,28 @@ export function ResultsScreen({ initialResults }: { initialResults: TestResult }
                     <div className="flex justify-between text-sm mb-1">
                       <span>Descarga</span>
                       <span>
-                        {results.download} / {ispAverage.download} Mbps
+                        {results.download} / {ispAverage.download.toFixed(1)} Mbps
                       </span>
                     </div>
-                    <Progress value={(results.download / (ispAverage.download * 1.5)) * 100} className="h-2" />
+                    <Progress value={ispAverage.download > 0 ? (results.download / (ispAverage.download * 1.5)) * 100 : 0} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>Subida</span>
                       <span>
-                        {results.upload} / {ispAverage.upload} Mbps
+                        {results.upload} / {ispAverage.upload.toFixed(1)} Mbps
                       </span>
                     </div>
-                    <Progress value={(results.upload / (ispAverage.upload * 1.5)) * 100} className="h-2" />
+                    <Progress value={ispAverage.upload > 0 ? (results.upload / (ispAverage.upload * 1.5)) * 100 : 0} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span>Latencia</span>
                       <span>
-                        {results.latency} / {ispAverage.latency} ms
+                        {results.latency} / {ispAverage.latency.toFixed(0)} ms
                       </span>
                     </div>
-                    <Progress value={100 - (results.latency / ispAverage.latency) * 50} className="h-2" />
+                    <Progress value={ispAverage.latency > 0 ? 100 - (results.latency / ispAverage.latency) * 50 : 0} className="h-2" />
                   </div>
                 </div>
               </CardContent>
