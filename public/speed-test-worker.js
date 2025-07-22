@@ -1,20 +1,364 @@
+// Progress phase constants to avoid typos
+const PROGRESS_PHASES = {
+  PING: 'ping',
+  DOWNLOAD: 'download',
+  UPLOAD: 'upload',
+  SERVICES: 'services',
+  COMPLETE: 'complete'
+};
+
+// Configuration for cumulative test time limit
+const MAX_CUMULATIVE_TEST_TIME = 30000; // 30 seconds max for all service tests
+let cumulativeTestStartTime = 0;
+
+// Helper function for fetch with retry and timeout
+async function fetchWithRetry(url, opts = {}, retries = 2, timeout = 8000) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+      const response = await fetch(url, {
+        ...opts,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (attempt === retries) {
+        throw error; // Last attempt failed
+      }
+      
+      // Log retry attempt
+      console.warn(`Fetch attempt ${attempt + 1} failed, retrying...`, error.message);
+      
+      // Wait a bit before retrying (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+    }
+  }
+}
+
 async function measureServiceComparison() {
-  // Para el prototipo, simularemos las velocidades de servicios
-  // basándonos en la velocidad de descarga general con variaciones
+  // Ahora usaremos mediciones reales para los servicios
+  const results = {
+    videoStreamingSpeed: 0,
+    socialMediaSpeed: 0,
+    generalWebSpeed: 0
+  };
   
-  const baseSpeed = await measureDownloadSpeed();
+  // Initialize cumulative test timer
+  cumulativeTestStartTime = performance.now();
   
-  // Simular diferentes niveles de throttling para cada servicio
-  // En un escenario real, estos valores vendrían de pruebas reales
-  const videoStreamingSpeed = baseSpeed * (0.7 + Math.random() * 0.3); // 70-100% de la velocidad base
-  const socialMediaSpeed = baseSpeed * (0.8 + Math.random() * 0.2); // 80-100% de la velocidad base  
-  const generalWebSpeed = baseSpeed * (0.9 + Math.random() * 0.1); // 90-100% de la velocidad base
+  // 1. Medir velocidad real de YouTube (video streaming)
+  try {
+    postMessage({
+      type: 'progress',
+      phase: PROGRESS_PHASES.SERVICES,
+      progress: 75,
+      message: 'Midiendo velocidad de YouTube...',
+      service: 'youtube'
+    });
+    
+    results.videoStreamingSpeed = await measureYouTubeSpeed();
+    
+    postMessage({
+      type: 'progress',
+      phase: PROGRESS_PHASES.SERVICES,
+      progress: 80,
+      message: 'YouTube medido. Midiendo otros servicios...'
+    });
+  } catch (error) {
+    console.error('Error midiendo YouTube:', error);
+    postMessage({
+      type: 'error',
+      phase: PROGRESS_PHASES.SERVICES,
+      service: 'youtube',
+      message: `Error midiendo YouTube: ${error.message}`
+    });
+  }
+  
+  // 2. Medir velocidad de redes sociales
+  try {
+    postMessage({
+      type: 'progress',
+      phase: PROGRESS_PHASES.SERVICES,
+      progress: 85,
+      message: 'Midiendo velocidad de redes sociales...',
+      service: 'social'
+    });
+    
+    results.socialMediaSpeed = await measureSocialMediaSpeed();
+  } catch (error) {
+    console.error('Error midiendo redes sociales:', error);
+    postMessage({
+      type: 'error',
+      phase: PROGRESS_PHASES.SERVICES,
+      service: 'social',
+      message: `Error midiendo redes sociales: ${error.message}`
+    });
+  }
+  
+  // 3. Medir velocidad de navegación web general
+  try {
+    postMessage({
+      type: 'progress',
+      phase: PROGRESS_PHASES.SERVICES,
+      progress: 90,
+      message: 'Midiendo velocidad de navegación web...',
+      service: 'web'
+    });
+    
+    results.generalWebSpeed = await measureGeneralWebSpeed();
+  } catch (error) {
+    console.error('Error midiendo navegación web:', error);
+    postMessage({
+      type: 'error',
+      phase: PROGRESS_PHASES.SERVICES,
+      service: 'web',
+      message: `Error midiendo navegación web: ${error.message}`
+    });
+  }
+  
+  // Fallback to simulated speeds for any failed measurements
+  if (results.videoStreamingSpeed === 0 || results.socialMediaSpeed === 0 || results.generalWebSpeed === 0) {
+    try {
+      const baseSpeed = await measureDownloadSpeed();
+      
+      if (results.videoStreamingSpeed === 0) {
+        results.videoStreamingSpeed = baseSpeed * (0.7 + Math.random() * 0.3);
+      }
+      if (results.socialMediaSpeed === 0) {
+        results.socialMediaSpeed = baseSpeed * (0.8 + Math.random() * 0.2);
+      }
+      if (results.generalWebSpeed === 0) {
+        results.generalWebSpeed = baseSpeed * (0.9 + Math.random() * 0.1);
+      }
+    } catch (fallbackError) {
+      console.error('Error getting fallback speeds:', fallbackError);
+    }
+  }
 
   return {
-    videoStreamingSpeed: Math.round(videoStreamingSpeed * 100) / 100,
-    socialMediaSpeed: Math.round(socialMediaSpeed * 100) / 100,
-    generalWebSpeed: Math.round(generalWebSpeed * 100) / 100
+    videoStreamingSpeed: Math.round(results.videoStreamingSpeed * 100) / 100,
+    socialMediaSpeed: Math.round(results.socialMediaSpeed * 100) / 100,
+    generalWebSpeed: Math.round(results.generalWebSpeed * 100) / 100
   };
+}
+
+// Nueva función para medir la velocidad real de YouTube
+async function measureYouTubeSpeed() {
+  let attempt = 0;
+  const maxAttempts = 3;
+  
+  // Check cumulative test time
+  if (performance.now() - cumulativeTestStartTime > MAX_CUMULATIVE_TEST_TIME) {
+    throw new Error('Tiempo máximo de prueba excedido');
+  }
+  
+  while (attempt < maxAttempts) {
+    try {
+      attempt++;
+      
+      // 1. Obtener URL de prueba desde nuestro backend
+      const response = await fetchWithRetry('/api/test/youtube', {}, 2, 5000);
+      const data = await response.json();
+      
+      if (!data.success || !data.url) {
+        throw new Error('No se pudo obtener URL de prueba de YouTube');
+      }
+      
+      const testUrl = data.url;
+      
+      // 2. Medir la velocidad de descarga del video
+      const startTime = performance.now();
+      const videoResponse = await fetchWithRetry(testUrl, {}, 1, 10000);
+      
+      if (!videoResponse.ok) {
+        throw new Error('Error al descargar video de prueba');
+      }
+      
+      // 3. Descargar los primeros chunks del video (no el video completo)
+      const reader = videoResponse.body.getReader();
+      let totalBytes = 0;
+      const maxBytes = 5 * 1024 * 1024; // Descargar máximo 5MB
+      const testDuration = 5000; // Máximo 5 segundos
+      
+      // Set up timer for granular progress updates every 500ms
+      const progressTimer = setInterval(() => {
+        const currentSpeed = (totalBytes * 8) / ((performance.now() - startTime) / 1000) / 1000000; // Mbps
+        postMessage({
+          type: 'progress',
+          phase: PROGRESS_PHASES.SERVICES,
+          progress: 75 + Math.min(5, (totalBytes / maxBytes) * 5),
+          message: `Midiendo YouTube: ${currentSpeed.toFixed(1)} Mbps`,
+          service: 'youtube'
+        });
+      }, 500);
+      
+      while (totalBytes < maxBytes && (performance.now() - startTime) < testDuration) {
+        // Check cumulative test time during download
+        if (performance.now() - cumulativeTestStartTime > MAX_CUMULATIVE_TEST_TIME) {
+          clearInterval(progressTimer);
+          reader.cancel();
+          throw new Error('Tiempo máximo de prueba excedido durante descarga');
+        }
+        
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        totalBytes += value.length;
+        
+        // Actualizar progreso
+        const currentSpeed = (totalBytes * 8) / ((performance.now() - startTime) / 1000) / 1000000; // Mbps
+        postMessage({
+          type: 'progress',
+          phase: PROGRESS_PHASES.SERVICES,
+          progress: 75 + Math.min(5, (totalBytes / maxBytes) * 5),
+          message: `Midiendo YouTube: ${currentSpeed.toFixed(1)} Mbps`,
+          service: 'youtube'
+        });
+      }
+      
+      // Cancelar el resto de la descarga
+      clearInterval(progressTimer);
+      reader.cancel();
+      
+      const endTime = performance.now();
+      const durationInSeconds = (endTime - startTime) / 1000;
+      const bitsLoaded = totalBytes * 8;
+      const speedBps = bitsLoaded / durationInSeconds;
+      const speedMbps = speedBps / 1000000;
+      
+      return speedMbps;
+      
+    } catch (error) {
+      console.error(`Error midiendo velocidad de YouTube (intento ${attempt}):`, error);
+      
+      postMessage({
+        type: 'error',
+        phase: PROGRESS_PHASES.SERVICES,
+        service: 'youtube',
+        attempt: attempt,
+        message: error.message
+      });
+      
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+}
+
+async function measureSocialMediaSpeed() {
+  let attempt = 0;
+  const maxAttempts = 3;
+  
+  // Check cumulative test time
+  if (performance.now() - cumulativeTestStartTime > MAX_CUMULATIVE_TEST_TIME) {
+    throw new Error('Tiempo máximo de prueba excedido');
+  }
+  
+  while (attempt < maxAttempts) {
+    try {
+      attempt++;
+      
+      const startTime = performance.now();
+      const response = await fetchWithRetry('/api/test/social-media', {
+        method: 'POST',
+        body: JSON.stringify({ chunkSize: 512 * 1024 }),
+        headers: { 'Content-Type': 'application/json' }
+      }, 2, 8000);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const endTime = performance.now();
+      const durationInSeconds = (endTime - startTime) / 1000;
+      const bitsLoaded = data.totalSize * 8;
+      const speedBps = bitsLoaded / durationInSeconds;
+      const speedMbps = speedBps / 1000000;
+
+      return speedMbps;
+    } catch (error) {
+      console.error(`Error midiendo velocidad de redes sociales (intento ${attempt}):`, error);
+      
+      postMessage({
+        type: 'error',
+        phase: PROGRESS_PHASES.SERVICES,
+        service: 'social',
+        attempt: attempt,
+        message: error.message
+      });
+      
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+}
+
+async function measureGeneralWebSpeed() {
+  let attempt = 0;
+  const maxAttempts = 3;
+  
+  // Check cumulative test time
+  if (performance.now() - cumulativeTestStartTime > MAX_CUMULATIVE_TEST_TIME) {
+    throw new Error('Tiempo máximo de prueba excedido');
+  }
+  
+  while (attempt < maxAttempts) {
+    try {
+      attempt++;
+      
+      const startTime = performance.now();
+      const response = await fetchWithRetry('/api/test/general-web', {
+        method: 'POST',
+        body: JSON.stringify({ fileCount: 10, fileSize: 50 * 1024 }),
+        headers: { 'Content-Type': 'application/json' }
+      }, 2, 8000);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const endTime = performance.now();
+      const durationInSeconds = (endTime - startTime) / 1000;
+      const bitsLoaded = data.totalSize * 8;
+      const speedBps = bitsLoaded / durationInSeconds;
+      const speedMbps = speedBps / 1000000;
+
+      return speedMbps;
+    } catch (error) {
+      console.error(`Error midiendo velocidad de navegación web (intento ${attempt}):`, error);
+      
+      postMessage({
+        type: 'error',
+        phase: PROGRESS_PHASES.SERVICES,
+        service: 'web',
+        attempt: attempt,
+        message: error.message
+      });
+      
+      if (attempt === maxAttempts) {
+        throw error;
+      }
+      
+      // Wait before retry
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
 }
 
 // Web Worker para medición de velocidad
@@ -41,7 +385,7 @@ async function startSpeedTest() {
     // Fase 1: Medición de ping
     postMessage({
       type: 'progress',
-      phase: 'ping',
+      phase: PROGRESS_PHASES.PING,
       progress: 0,
       message: 'Midiendo latencia...'
     });
@@ -52,7 +396,7 @@ async function startSpeedTest() {
     
     postMessage({
       type: 'progress',
-      phase: 'ping',
+      phase: PROGRESS_PHASES.PING,
       progress: 25,
       message: 'Latencia medida',
       currentPing: results.ping,
@@ -62,7 +406,7 @@ async function startSpeedTest() {
     // Fase 2: Medición de velocidad de descarga
     postMessage({
       type: 'progress',
-      phase: 'download',
+      phase: PROGRESS_PHASES.DOWNLOAD,
       progress: 25,
       message: 'Midiendo velocidad de descarga...'
     });
@@ -71,7 +415,7 @@ async function startSpeedTest() {
     
     postMessage({
       type: 'progress',
-      phase: 'download',
+      phase: PROGRESS_PHASES.DOWNLOAD,
       progress: 60,
       message: 'Velocidad de descarga medida',
       currentDownload: results.downloadSpeed
@@ -80,7 +424,7 @@ async function startSpeedTest() {
     // Fase 3: Medición de velocidad de subida
     postMessage({
       type: 'progress',
-      phase: 'upload',
+      phase: PROGRESS_PHASES.UPLOAD,
       progress: 60,
       message: 'Midiendo velocidad de subida...'
     });
@@ -89,7 +433,7 @@ async function startSpeedTest() {
     
     postMessage({
       type: 'progress',
-      phase: 'upload',
+      phase: PROGRESS_PHASES.UPLOAD,
       progress: 70,
       message: 'Velocidad de subida medida',
       currentUpload: results.uploadSpeed
@@ -98,7 +442,7 @@ async function startSpeedTest() {
     // Fase 4: Pruebas de comparación de servicios
     postMessage({
       type: 'progress',
-      phase: 'services',
+      phase: PROGRESS_PHASES.SERVICES,
       progress: 70,
       message: 'Midiendo velocidad de servicios específicos...'
     });
@@ -110,7 +454,7 @@ async function startSpeedTest() {
 
     postMessage({
       type: 'progress',
-      phase: 'services',
+      phase: PROGRESS_PHASES.SERVICES,
       progress: 95,
       message: 'Pruebas de servicios completadas'
     });
@@ -192,7 +536,7 @@ async function measureDownloadSpeed() {
           const currentSpeed = (blob.size / timeTaken) / (1024 * 1024); // MB/s
           postMessage({
             type: 'progress',
-            phase: 'download',
+            phase: PROGRESS_PHASES.DOWNLOAD,
             progress: 25 + (testCount * 7), // Progreso entre 25-60%
             message: 'Midiendo velocidad de descarga...',
             currentDownload: currentSpeed
@@ -239,19 +583,19 @@ async function measureUploadSpeed() {
         
         // Enviar progreso intermedio
         const currentSpeed = (testData.size / timeTaken) / (1024 * 1024); // MB/s
-        postMessage({
-          type: 'progress',
-          phase: 'upload',
-          progress: 60 + (testCount * 10), // Progreso entre 60-90%
-          message: 'Midiendo velocidad de subida...',
-          currentUpload: currentSpeed
-        });
+          postMessage({
+            type: 'progress',
+            phase: PROGRESS_PHASES.UPLOAD,
+            progress: 60 + Math.min(10, (testCount * 3.33)), // Progreso entre 60-70%
+            message: 'Midiendo velocidad de subida...',
+            currentUpload: currentSpeed
+          });
       }
     } catch (error) {
       // Si no hay endpoint de upload, informar al usuario
       postMessage({
         type: 'error',
-        phase: 'upload',
+        phase: PROGRESS_PHASES.UPLOAD,
         message: 'Error al medir la velocidad de subida. No se pudo conectar al servidor.',
         action: 'retry' // Sugerir al usuario que intente nuevamente
       });
