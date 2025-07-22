@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Wifi, Shield, BarChart3, Users, ArrowRight, Globe } from "lucide-react"
+import { PublicResultsTable } from "@/components/PublicResultsTable"
 
 export default function HomePage() {
   const router = useRouter()
@@ -167,6 +168,22 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Public Results Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-center text-slate-900 mb-4">
+              Resultados Compartidos por la Comunidad
+            </h2>
+            <p className="text-center text-slate-600 mb-12 max-w-2xl mx-auto">
+              Explora las pruebas realizadas por usuarios en toda Colombia y compara
+              el rendimiento de diferentes ISPs en tu región.
+            </p>
+            <PublicResultsTable />
           </div>
         </div>
       </section>

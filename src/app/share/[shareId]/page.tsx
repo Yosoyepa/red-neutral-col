@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Download, Upload, Clock, Activity, Share2, AlertCircle, Shield } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { ShareButtons } from '@/components/ui/ShareButtons';
 
 async function getSharedResult(shareId: string) {
@@ -32,17 +32,18 @@ async function getSharedResult(shareId: string) {
 export default function SharedResultPage({ 
   params 
 }: { 
-  params: { shareId: string } 
+  params: Promise<{ shareId: string }> 
 }) {
+  const resolvedParams = use(params);
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showCopySuccess, setShowCopySuccess] = useState(false);
   
   useEffect(() => {
     async function fetchResult() {
-      console.log('Fetching shared result for ID:', params.shareId);
+      console.log('Fetching shared result for ID:', resolvedParams.shareId);
       try {
-        const data = await getSharedResult(params.shareId);
+        const data = await getSharedResult(resolvedParams.shareId);
         console.log('Received data:', data);
         if (!data) {
           console.error('No data received');
@@ -57,7 +58,7 @@ export default function SharedResultPage({
       }
     }
     fetchResult();
-  }, [params.shareId]);
+  }, [resolvedParams.shareId]);
   
   if (loading) {
     return (
@@ -122,7 +123,7 @@ export default function SharedResultPage({
             Monitoreo de Neutralidad de Red en Colombia
           </p>
           <Badge variant="secondary" className="mt-2">
-            ID: {params.shareId}
+            ID: {resolvedParams.shareId}
           </Badge>
         </div>
 
