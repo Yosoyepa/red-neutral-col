@@ -37,21 +37,21 @@ Este documento detalla las tareas pendientes organizadas por fases para completa
 **Nombre de la Rama:** `feature/share-results`
 **Objetivo:** Permitir a los usuarios compartir sus resultados de forma anónima para contribuir a la base de datos nacional.
 
-- [ ] **Tarea 5.1: Backend para Compartir Resultados**
-  - Crear endpoint `/api/share-result` que genere un ID único compartible
-  - Implementar página pública `/share/[shareId]` para ver resultados compartidos
-  - Añadir campos en la BD para gestionar resultados compartidos (shareId, isPublic, etc.)
+- [x] **Tarea 5.1: Backend para Compartir Resultados**
+  - Crear endpoint `/api/share-result` que genere un ID único compartible ✓
+  - Implementar página pública `/share/[shareId]` para ver resultados compartidos ✓
+  - Añadir campos en la BD para gestionar resultados compartidos (shareId, isPublic, etc.) ✓
 
-- [ ] **Tarea 5.2: Implementar Funcionalidad de Compartir**
-  - Añadir onClick handler al botón "Compartir Resultados"
-  - Crear modal de confirmación con opciones de privacidad
-  - Generar enlace compartible y copiarlo al portapapeles
-  - Añadir opciones para compartir en redes sociales
+- [x] **Tarea 5.2: Implementar Funcionalidad de Compartir**
+  - Añadir onClick handler al botón "Compartir Resultados" ✓
+  - Crear modal de confirmación con opciones de privacidad (simplificado - compartir directo) ✓
+  - Generar enlace compartible y copiarlo al portapapeles ✓
+  - Añadir opciones para compartir en redes sociales (pendiente)
 
-- [ ] **Tarea 5.3: Página de Resultado Compartido**
-  - Crear componente para mostrar resultados compartidos
-  - Incluir marca de agua o indicador de "Resultado de Red Neutral COL"
-  - Añadir botón para que otros usuarios realicen su propia prueba
+- [x] **Tarea 5.3: Página de Resultado Compartido**
+  - Crear componente para mostrar resultados compartidos ✓
+  - Incluir marca de agua o indicador de "Resultado de Red Neutral COL" ✓
+  - Añadir botón para que otros usuarios realicen su propia prueba ✓
 
 ---
 

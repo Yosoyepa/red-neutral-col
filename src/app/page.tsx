@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Wifi, Shield, BarChart3, Users, ArrowRight, Globe } from "lucide-react"
+import { PublicResultsTable } from "@/components/PublicResultsTable"
 
 export default function HomePage() {
   const router = useRouter()
@@ -39,13 +40,26 @@ export default function HomePage() {
               <span className="text-xl font-bold text-slate-900">Red Neutral</span>
             </div>
             <nav className="hidden md:flex items-center gap-6 text-sm">
-              <a href="#" className="text-slate-600 hover:text-blue-600 transition-colors">
+              <a href="#que-es" className="text-slate-600 hover:text-blue-600 transition-colors">
                 ¿Qué es?
               </a>
-              <a href="#" className="text-slate-600 hover:text-blue-600 transition-colors">
+              <a href="#resultados" className="text-slate-600 hover:text-blue-600 transition-colors cursor-pointer"
+                 onClick={(e) => {
+                   e.preventDefault();
+                   const element = document.getElementById('resultados');
+                   if (element) {
+                     const headerOffset = 80; // Altura aproximada del header
+                     const elementPosition = element.getBoundingClientRect().top;
+                     const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                     window.scrollTo({
+                       top: offsetPosition,
+                       behavior: 'smooth'
+                     });
+                   }
+                 }}>
                 Resultados
               </a>
-              <a href="#" className="text-slate-600 hover:text-blue-600 transition-colors">
+              <a href="#sobre-nosotros" className="text-slate-600 hover:text-blue-600 transition-colors">
                 Sobre nosotros
               </a>
             </nav>
@@ -124,7 +138,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="bg-white py-16">
+      <section id="que-es" className="bg-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center text-slate-900 mb-12">
@@ -167,6 +181,22 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Public Results Section */}
+      <section id="resultados" className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-center text-slate-900 mb-4">
+              Resultados Compartidos por la Comunidad
+            </h2>
+            <p className="text-center text-slate-600 mb-12 max-w-2xl mx-auto">
+              Explora las pruebas realizadas por usuarios en toda Colombia y compara
+              el rendimiento de diferentes ISPs en tu región.
+            </p>
+            <PublicResultsTable />
           </div>
         </div>
       </section>
