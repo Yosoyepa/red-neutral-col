@@ -10,7 +10,7 @@ import { TestResults, TestFormData, WorkerMessage } from "@/lib/types"
 function TestingContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [currentPhase, setCurrentPhase] = useState<"ping" | "download" | "upload" | "complete">("ping")
+  const [currentPhase, setCurrentPhase] = useState<"ping" | "download" | "upload" | "services" | "complete">("ping")
   const [progress, setProgress] = useState(0)
   const [currentMessage, setCurrentMessage] = useState("Iniciando prueba...")
   const [downloadSpeed, setDownloadSpeed] = useState(0)
@@ -32,6 +32,9 @@ function TestingContent() {
         uploadSpeed: results.uploadSpeed,
         ping: results.ping,
         jitter: results.jitter,
+        videoStreamingSpeed: results.videoStreamingSpeed,
+        socialMediaSpeed: results.socialMediaSpeed,
+        generalWebSpeed: results.generalWebSpeed,
         testDate: results.testDate
       }
       
@@ -135,6 +138,14 @@ function TestingContent() {
           color: "text-green-600",
           bgColor: "bg-green-100",
         }
+      case "services":
+        return {
+          title: "Analizando Servicios...",
+          description: "Midiendo velocidad de servicios específicos como YouTube",
+          icon: Shield,
+          color: "text-indigo-600",
+          bgColor: "bg-indigo-100",
+        }
       case "complete":
         return {
           title: "Prueba Completada",
@@ -225,15 +236,16 @@ function TestingContent() {
         </Card>
 
         {/* Test Steps */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           {[
             { key: "ping", label: "Latencia", icon: Zap },
             { key: "download", label: "Descarga", icon: Download },
             { key: "upload", label: "Subida", icon: Upload },
+            { key: "services", label: "Servicios", icon: Shield },
           ].map((step, index) => {
             const StepIcon = step.icon
             const isActive = currentPhase === step.key
-            const phases = ["ping", "download", "upload", "complete"]
+            const phases = ["ping", "download", "upload", "services", "complete"]
             const currentIndex = phases.indexOf(currentPhase)
             const isCompleted = currentIndex > index
 
