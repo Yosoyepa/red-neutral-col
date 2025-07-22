@@ -77,6 +77,9 @@ export function ResultsScreen({
   serviceComparison: ServiceComparison;
 }) {
   const [throttlingModalOpen, setThrottlingModalOpen] = useState(false)
+  const [isSharing, setIsSharing] = useState(false)
+  const [shareUrl, setShareUrl] = useState('')
+  const [showShareSuccess, setShowShareSuccess] = useState(false)
   
   // Usar los datos reales de la base de datos
   const results = {
@@ -148,6 +151,36 @@ neutralityScore
 
   const neutralityInfo = getNeutralityStatus()
   const NeutralityIcon = neutralityInfo.icon
+
+  const handleShare = async () => {
+    setIsSharing(true)
+    try {
+      const response = await fetch('/api/share-result', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ resultId: initialResults.id }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const fullShareUrl = `${window.location.origin}/share/${data.shareId}`
+        setShareUrl(fullShareUrl)
+        
+        // Copiar al portapapeles
+        await navigator.clipboard.writeText(fullShareUrl)
+        setShowShareSuccess(true)
+        
+        // Ocultar mensaje de éxito después de 3 segundos
+        setTimeout(() => setShowShareSuccess(false), 3000)
+      }
+    } catch (error) {
+      console.error('Error al compartir:', error)
+    } finally {
+      setIsSharing(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -521,15 +554,33 @@ neutralityScore
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+              onClick={handleShare}
+              disabled={isSharing}
+            >
               <Share2 className="w-4 h-4" />
-              Compartir Resultados (Anónimamente)
+              {isSharing ? 'Compartiendo...' : 'Compartir Resultados (Anónimamente)'}
             </Button>
             <Button variant="outline" className="gap-2 bg-transparent">
               <Map className="w-4 h-4" />
               Ver Mapa Nacional
             </Button>
           </div>
+          
+          {/* Share Success Message */}
+          {showShareSuccess && (
+            <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+              <p className="text-green-800 font-medium">
+                ¡Enlace copiado al portapapeles!
+              </p>
+              {shareUrl && (
+                <p className="text-sm text-green-600 mt-1">
+                  {shareUrl}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
       
