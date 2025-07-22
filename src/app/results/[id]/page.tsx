@@ -106,6 +106,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       ispAverages={ispAverages}
       neutralityScore={neutralityData.score}
       neutralityStatus={neutralityData.status}
+      serviceComparison={{
+        videoStreamingSpeed: resultData.videoStreamingSpeed || 0,
+        socialMediaSpeed: resultData.socialMediaSpeed || 0,
+        generalWebSpeed: resultData.generalWebSpeed || 0
+      }}
     />
   );
 }

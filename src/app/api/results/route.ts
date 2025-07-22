@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
-    const { isp, city, downloadSpeed, uploadSpeed, ping, jitter, testDate } = body
+    const { isp, city, downloadSpeed, uploadSpeed, ping, jitter, videoStreamingSpeed, socialMediaSpeed, generalWebSpeed, testDate } = body
     
     // Validar campos requeridos
     if (!isp || !city || downloadSpeed === undefined || uploadSpeed === undefined || ping === undefined) {
@@ -35,6 +35,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Jitter debe estar entre 0 y 1000 ms' }, { status: 400 })
     }
     
+    // Validar campos opcionales de comparación de servicios
+    const videoStreamingSpeedNum = videoStreamingSpeed ? parseFloat(videoStreamingSpeed) : null
+    const socialMediaSpeedNum = socialMediaSpeed ? parseFloat(socialMediaSpeed) : null
+    const generalWebSpeedNum = generalWebSpeed ? parseFloat(generalWebSpeed) : null
+    
     // Crear registro en la base de datos
     const result = await prisma.testResult.create({
       data: {
@@ -44,6 +49,9 @@ export async function POST(request: NextRequest) {
         uploadSpeed: uploadSpeedNum,
         ping: pingNum,
         jitter: jitterNum,
+        videoStreamingSpeed: videoStreamingSpeedNum,
+        socialMediaSpeed: socialMediaSpeedNum,
+        generalWebSpeed: generalWebSpeedNum,
         testDate: testDate ? new Date(testDate) : new Date(),
       }
     })

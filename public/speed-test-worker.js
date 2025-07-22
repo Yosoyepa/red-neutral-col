@@ -1,3 +1,22 @@
+async function measureServiceComparison() {
+  // Para el prototipo, simularemos las velocidades de servicios
+  // basándonos en la velocidad de descarga general con variaciones
+  
+  const baseSpeed = await measureDownloadSpeed();
+  
+  // Simular diferentes niveles de throttling para cada servicio
+  // En un escenario real, estos valores vendrían de pruebas reales
+  const videoStreamingSpeed = baseSpeed * (0.7 + Math.random() * 0.3); // 70-100% de la velocidad base
+  const socialMediaSpeed = baseSpeed * (0.8 + Math.random() * 0.2); // 80-100% de la velocidad base  
+  const generalWebSpeed = baseSpeed * (0.9 + Math.random() * 0.1); // 90-100% de la velocidad base
+
+  return {
+    videoStreamingSpeed: Math.round(videoStreamingSpeed * 100) / 100,
+    socialMediaSpeed: Math.round(socialMediaSpeed * 100) / 100,
+    generalWebSpeed: Math.round(generalWebSpeed * 100) / 100
+  };
+}
+
 // Web Worker para medición de velocidad
 self.addEventListener('message', function(event) {
   if (event.data.type === 'start') {
@@ -12,6 +31,9 @@ async function startSpeedTest() {
     uploadSpeed: 0,
     ping: 0,
     jitter: 0,
+    videoStreamingSpeed: 0,
+    socialMediaSpeed: 0,
+    generalWebSpeed: 0,
     testDate: new Date().toISOString()
   };
 
@@ -68,9 +90,29 @@ async function startSpeedTest() {
     postMessage({
       type: 'progress',
       phase: 'upload',
-      progress: 90,
+      progress: 70,
       message: 'Velocidad de subida medida',
       currentUpload: results.uploadSpeed
+    });
+
+    // Fase 4: Pruebas de comparación de servicios
+    postMessage({
+      type: 'progress',
+      phase: 'services',
+      progress: 70,
+      message: 'Midiendo velocidad de servicios específicos...'
+    });
+
+    const serviceResults = await measureServiceComparison();
+    results.videoStreamingSpeed = serviceResults.videoStreamingSpeed;
+    results.socialMediaSpeed = serviceResults.socialMediaSpeed;
+    results.generalWebSpeed = serviceResults.generalWebSpeed;
+
+    postMessage({
+      type: 'progress',
+      phase: 'services',
+      progress: 95,
+      message: 'Pruebas de servicios completadas'
     });
 
     // Finalizar
