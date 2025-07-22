@@ -18,6 +18,12 @@ model TestResult {
   ping            Int
   jitter          Float
   throttlingRatio Float?
+  
+  // Nuevos campos para pruebas de comparación de servicios
+  videoStreamingSpeed Float? // Velocidad simulando streaming de video
+  socialMediaSpeed   Float? // Velocidad simulando redes sociales
+  generalWebSpeed    Float? // Velocidad para navegación general
+  
   testDate        DateTime @default(now())
   createdAt       DateTime @default(now())
 }
