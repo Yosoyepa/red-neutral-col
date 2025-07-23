@@ -339,7 +339,7 @@ Distribuido bajo la Licencia MIT. Ver `LICENSE` para más información.
 
 - 📧 Email: andradeunigarrojuancarlos@gmail.com
 - 🎓 Universidad Nacional de Colombia
-- 💼 LinkedIn: [Juan Carlos Andrade](https://linkedin.com/in/juanandrade)
+- 💼 LinkedIn: [Juan Carlos Andrade](https://linkedin.com/in/juan-carlos-andrade-unigarro-932220223)
 
 ### Agradecimientos
 
