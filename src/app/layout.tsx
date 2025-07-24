@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { ChatBot } from '@/components/ChatBot'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'Red Neutral Colombia',
+  description: 'Herramienta para medir la neutralidad de la red en Colombia',
 }
 
 export default function RootLayout({
@@ -13,8 +13,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="es">
+      <body>
+        {children}
+        <ChatBot />
+      </body>
     </html>
   )
 }
