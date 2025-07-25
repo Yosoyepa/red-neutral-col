@@ -1,16 +1,19 @@
 # 🌐 Red Neutral COL
 
+> Una herramienta integral de monitoreo de neutralidad de red para Colombia con asistente IA integrado
+
 <div align="center">
 
-![Red Neutral COL](https://img.shields.io/badge/Red%20Neutral-COL-blue?style=for-the-badge)
-![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
-![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?style=for-the-badge&logo=postgresql)
+[![Next.js](https://img.shields.io/badge/Next.js-15.2+-black.svg?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-blue.svg?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.12+-2D3748.svg?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4+-38B2AC.svg?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![Google AI](https://img.shields.io/badge/Google_AI-Gemini-4285F4.svg?style=for-the-badge&logo=google)](https://ai.google.dev/)
 
-**Herramienta de monitoreo de neutralidad de red para Colombia**
+**🚀 Monitorea y defiende tu derecho a una internet libre en Colombia**
 
-[Demo en Vivo](https://red-neutral-col.vercel.app) | [Reportar Bug](mailto:andradeunigarrojuancarlos@gmail.com) | [Documentación](#documentación)
+[Demo en Vivo](https://red-neutral-col.vercel.app) • [Reportar Bug](https://github.com/juanandrade/red-neutral-col/issues) • [Solicitar Feature](https://github.com/juanandrade/red-neutral-col/issues)
 
 </div>
 
@@ -56,6 +59,12 @@ En Colombia, los usuarios no tienen herramientas accesibles para verificar si su
   - Pruebas para redes sociales
   - Pruebas de navegación general
   - Puntuación de neutralidad (0-100)
+
+- **🤖 Asistente IA Integrado** *(NUEVO)*
+  - Chat bot especializado en neutralidad de red
+  - Respuestas contextualizadas sobre regulación colombiana
+  - Ayuda para interpretar resultados de pruebas
+  - Información sobre derechos y cómo reportar violaciones
 
 - **Sistema de Compartir**
   - Enlaces únicos para cada resultado
@@ -157,23 +166,28 @@ sequenceDiagram
 ## 🛠️ Tecnologías
 
 ### Frontend
-- **Framework**: Next.js 15 (App Router)
-- **Lenguaje**: TypeScript 5
-- **Estilos**: Tailwind CSS
-- **Componentes**: shadcn/ui
-- **Gráficos**: Recharts
-- **Estado**: TanStack Query
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Lenguaje**: [TypeScript 5](https://www.typescriptlang.org/)
+- **Estilos**: [Tailwind CSS](https://tailwindcss.com/)
+- **Componentes**: [shadcn/ui](https://ui.shadcn.com/)
+- **Gráficos**: [Recharts](https://recharts.org/)
+- **Estado**: [TanStack Query](https://tanstack.com/query/)
 
 ### Backend
 - **Runtime**: Node.js
-- **ORM**: Prisma
-- **Base de Datos**: PostgreSQL (Supabase)
-- **Validación**: Zod
+- **ORM**: [Prisma](https://www.prisma.io/)
+- **Base de Datos**: [PostgreSQL](https://www.postgresql.org/) ([Supabase](https://supabase.com/))
+- **Validación**: [Zod](https://zod.dev/)
+
+### IA y ChatBot
+- **Modelo**: [Google Gemini Pro](https://ai.google.dev/)
+- **SDK**: [@google/generative-ai](https://www.npmjs.com/package/@google/generative-ai)
+- **Contexto**: Especializado en neutralidad de red colombiana
 
 ### Herramientas
-- **Empaquetador**: Turbopack
-- **Linting**: ESLint
-- **Formato**: Prettier
+- **Gestor de Paquetes**: [pnpm](https://pnpm.io/)
+- **Linting**: [ESLint](https://eslint.org/)
+- **Formato**: [Prettier](https://prettier.io/)
 - **Control de Versiones**: Git
 
 ## 🚀 Instalación
@@ -204,9 +218,15 @@ cp .env.example .env
 
 Editar `.env` con tus credenciales:
 ```env
+# Base de datos
 DATABASE_URL="postgresql://user:password@host:port/database"
 NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+
+# Google Gemini API (para el ChatBot)
+GEMINI_API_KEY="tu_api_key_aqui"
 ```
+
+> 💡 Para obtener una API key de Gemini, visita [Google AI Studio](https://makersuite.google.com/app/apikey)
 
 4. **Configurar la base de datos**
 
@@ -246,6 +266,17 @@ La aplicación estará disponible en `http://localhost:3000`
 1. En la página de resultados, haz clic en "Compartir Resultados"
 2. El enlace se copiará automáticamente
 3. Comparte en redes sociales o envía el enlace directo
+
+### Usar el Asistente IA
+
+1. Busca el botón flotante azul con ícono de mensaje en la esquina inferior derecha
+2. Haz clic para abrir el chat
+3. Puedes preguntar sobre:
+   - ¿Qué es la neutralidad de red?
+   - ¿Cómo interpretar tus resultados?
+   - ¿Cuáles son tus derechos como usuario?
+   - ¿Cómo reportar violaciones a la CRC?
+   - Regulación colombiana vigente
 
 ## 🔌 API
 
@@ -347,15 +378,17 @@ Distribuido bajo la Licencia MIT. Ver `LICENSE` para más información.
 - Profesores y compañeros que apoyaron el proyecto
 - Comunidad open source por las herramientas utilizadas
 
-## 🚧 Roadmap
+## 🙧 Roadmap
 
 - [x] Sistema básico de medición
 - [x] Detección de throttling
 - [x] Sistema de compartir resultados
+- [x] Asistente IA con ChatBot integrado
 - [ ] Mapa nacional de neutralidad
 - [ ] API pública para desarrolladores
 - [ ] Aplicación móvil
 - [ ] Sistema de reportes a autoridades
+- [ ] Histórico de mediciones por usuario
 
 ---
 
